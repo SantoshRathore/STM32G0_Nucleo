@@ -58,12 +58,20 @@ void uart_tx(string str)
 	HAL_UART_Transmit(&huart2, (uint8_t *)tx_ptr, strlen(tx_ptr), HAL_MAX_DELAY);
 	delete tx_ptr;
 }
-string str;
-void uart_tx(float var)
+
+void uart_tx(double var)
 {
 	sprintf(tx_arr, "%0.3f", var);
 	uart_tx(tx_arr);
 }
+
+void uart_tx(int var)
+{
+	sprintf(tx_arr, "%d", var);
+	uart_tx(tx_arr);
+}
+
+
 
 /* USER CODE BEGIN PV */
 
@@ -106,15 +114,17 @@ int main(void)
   //Sending Data Type 1 using pointer......
   char *tx_ptr = "Pointer Test Text\n\r";
   uart_tx(tx_ptr);
-  char tx_str[10];
   //Sending data Type 2 using Text......
   uart_tx("Sending differrent types of data on uart using HAL\n\r");
-  /* USER CODE END 2 */
-  //Sending data type 3 of integer type.....
+  //Sending data type 3 of Number type.....
   uart_tx(1121.123);
   uart_tx("\n\r");
+  uart_tx(100);
+  uart_tx("\n\r");
+  uart_tx(983567);
+  uart_tx("\n\r");
   HAL_Delay(100);
-
+  /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
