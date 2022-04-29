@@ -49,6 +49,18 @@ using namespace std;
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart2;
 char tx_arr[10];
+uint8_t RS232_rx_flag = 0;	//Flag to check Uart interrupt
+char RS232_rxbuffer[10];	//Buffer to store Uart Data
+string str_rx;
+//Interrupt Service Routine
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+ if(huart->Instance==USART2)
+ {
+	 RS232_rx_flag = 1;
+ }
+}
+
 //Functions to send data on uart using UART2 with String
 //Also Function Overloading is used for uart_tx functions
 void uart_tx(string str)
@@ -111,26 +123,30 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  //Sending Data Type 1 using pointer......
-  char *tx_ptr = "Pointer Test Text\n\r";
-  uart_tx(tx_ptr);
-  //Sending data Type 2 using Text......
-  uart_tx("Sending differrent types of data on uart using HAL\n\r");
-  //Sending data type 3 of Number type.....
-  uart_tx(1121.123);
-  uart_tx("\n\r");
-  uart_tx(100);
-  uart_tx("\n\r");
-  uart_tx(983567);
-  uart_tx("\n\r");
-  HAL_Delay(100);
+  uart_tx("Testing of Uart Reception using Interrupt....\n\r");
+  uart_tx("For testing 3 commands to be used...\n\r");
+  uart_tx("Command1 :> 1234567890\n\r");
+  uart_tx("Command2 :> 2134567890\n\r");
+  uart_tx("Command3 :> 3134567890\n\r");
+  uart_tx("Make sure to send 10 characters to be send otherwise controller get stuck\n\r");
   /* USER CODE END 2 */
+  HAL_UART_Receive_IT(&huart2, (uint8_t *)RS232_rxbuffer, 10);	//Enable Uart Reception in Interrupt Mode with 10 bytes
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
+	  if (RS232_rx_flag == 1)
+	  {
+		  str_rx = RS232_rxbuffer;
+		  if (str_rx.compare("1234567890") == 0)uart_tx("Case 1 command Received\n\r");
+		  else if(str_rx.compare("2134567890") == 0)uart_tx("Case 2 command Received\n\r");
+		  else if(str_rx.compare("3134567890") == 0)uart_tx("Case 3 command Received\n\r");
+		  else uart_tx("Incorrect command, Send proper command\n\r");
+		  RS232_rx_flag = 0;												//Clearing Flag to use interrupt again
+		  HAL_UART_Receive_IT(&huart2, (uint8_t *)RS232_rxbuffer, 10);		//Enabling Uart interrupt again
+	  }
 	  Led_TOGGLE();
 	  HAL_Delay(1000);
     /* USER CODE BEGIN 3 */
